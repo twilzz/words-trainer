@@ -1,5 +1,6 @@
 import { Card as AntCard, Button } from 'antd'
 import { useEffect, useState } from 'react'
+import { Dictionary } from '../utils/dictionanaryAPI'
 import { IContent } from '../utils/wordsData'
 
 export const LessonCard = ({
@@ -14,6 +15,8 @@ export const LessonCard = ({
   onSelectVariant: (variant: number) => void
 }) => {
   const [selectedOption, setSelectedOption] = useState<number>()
+  const [audioUrl, setAudioUrl] = useState<string | undefined>()
+  const api = new Dictionary('https://api.dictionaryapi.dev/api/v2/entries/en/')
 
   const onKeydown = (e: KeyboardEvent) => {
     const validKeys = ['1', '2', '3', '4']
@@ -24,11 +27,25 @@ export const LessonCard = ({
   }
 
   useEffect(() => {
+    api.get(word[0]).then((data) => setAudioUrl(data))
+  }, [])
+
+  useEffect(() => {
     window.addEventListener('keydown', onKeydown)
     return () => {
       window.removeEventListener('keydown', onKeydown)
     }
   }, [])
+
+  useEffect(() => {
+    if (audioUrl) {
+      const audio = new Audio(audioUrl)
+      audio.play()
+      return () => {
+        audio.pause()
+      }
+    }
+  }, [audioUrl])
 
   return (
     <AntCard
